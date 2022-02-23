@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using WebApi.Entities;
 using WebApi.Helpers;
+using WebApi.Authorization;
 using System;
 using WebApi.Models.Users;
 using Microsoft.EntityFrameworkCore;
@@ -35,7 +36,7 @@ namespace WebApi.Services
     {
         private DataContext _context;
         private readonly IMapper _mapper;
-
+        private IJwtUtils _jwtUtils;
         public SlotService slotService;
         public Functions functions;
 
@@ -44,12 +45,13 @@ namespace WebApi.Services
         public UserService(
             DataContext context,
             IMapper mapper,
+            IJwtUtils jwtUtils,
             IOptions<AppSettings> appSettings)
         {
             _context = context;
             _mapper = mapper;
             _appSettings = appSettings.Value;
-
+            _jwtUtils = jwtUtils;
             functions = new Functions();
         }
 
@@ -65,7 +67,7 @@ namespace WebApi.Services
             var doctors = _context.Users.Include(d => d.Slots)
             .Where(d => d.Role == Role.Doctor).ToList();
 
-            var sortedDoctors = functions.SortDoctors(sortBy,doctors);
+            var sortedDoctors = functions.SortDoctors(sortBy, doctors);
 
             if (!String.IsNullOrEmpty(filterString))
             {
@@ -76,27 +78,29 @@ namespace WebApi.Services
                     sortedDoctors = new List<User>();
                     sortedDoctors.Add(mostVisitedDoctor);
                 }
-                if(filterString == "morethan6h")
+                if (filterString == "morethan6h")
                 {
                     var mostVisitedDoctors = new List<User>();
                     foreach (var item in sortedDoctors)
                     {
-                        if(functions.HoursCount(item.Slots) > 360)
+                        if (functions.HoursCount(item.Slots) > 360)
                             mostVisitedDoctors.Add(item);
-                        
+
                     }
                     sortedDoctors = mostVisitedDoctors;
-                    
+
                 }
             }
 
-          
+
             return sortedDoctors;
         }
 
         public User GetById(int id)
         {
-            return getUser(id);
+            var user = _context.Users.Find(id);
+            if (user == null) throw new KeyNotFoundException("User not found");
+            return user;
         }
 
         public void Create(CreateRequest model)
@@ -117,7 +121,7 @@ namespace WebApi.Services
         }
 
 
-        
+
         public void Delete(int id)
         {
             var user = getUser(id);
@@ -138,32 +142,17 @@ namespace WebApi.Services
         }
 
 
-
-
-
         public AuthenticateResponse Login(LoginRequest loginInfo)
         {
             var user = _context.Users.FirstOrDefault(user => user.Email.Equals(loginInfo.Email));
-            if (user == null) throw new KeyNotFoundException("User not found");
-            if (!BCryptNet.Verify(loginInfo.Password, user.PasswordHash))
-                throw new System.Exception("Wrong Password");
-            var token = generateJwtToken(user);
-            return new AuthenticateResponse(user, token);
+            // validate
+            if (user == null || !BCryptNet.Verify(loginInfo.Password, user.PasswordHash))
+                throw new AppException("Username or password is incorrect");
+
+            var jwtToken = _jwtUtils.GenerateJwtToken(user);
+            return new AuthenticateResponse(user, jwtToken);
         }
 
-        private string generateJwtToken(User user)
-        {
-            // generate token that is valid for 7 days
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.ASCII.GetBytes(_appSettings.Secret);
-            var tokenDescriptor = new SecurityTokenDescriptor
-            {
-                Subject = new ClaimsIdentity(new[] { new Claim("id", user.Id.ToString()) }),
-                Expires = DateTime.UtcNow.AddDays(7),
-                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
-            };
-            var token = tokenHandler.CreateToken(tokenDescriptor);
-            return tokenHandler.WriteToken(token);
-        }
+
     }
 }

@@ -3,8 +3,9 @@ using Microsoft.AspNetCore.Mvc;
 using WebApi.Models.Users;
 using WebApi.Models;
 using System.Collections.Generic;
-
+using WebApi.Authorization;
 using WebApi.Services;
+using WebApi.Entities;
 using WebApi.Helpers;
 using System.Security.Claims;
 using System.IdentityModel.Tokens.Jwt;
@@ -13,7 +14,6 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.Extensions.Configuration;
 using System.Linq;
-using Microsoft.AspNetCore.Authorization;
 
 namespace WebApi.Controllers
 {
@@ -21,23 +21,20 @@ namespace WebApi.Controllers
     [Route("[controller]")]
     public class UsersController : ControllerBase
     {
-        private readonly IConfiguration _configuration;
 
         private IUserService _userService;
         private IMapper _mapper;
 
         public UsersController(
             IUserService userService,
-            IMapper mapper,
-            IConfiguration configuration)
+            IMapper mapper)
         {
             _userService = userService;
             _mapper = mapper;
-            _configuration = configuration;
 
         }
 
-        [Authorize]
+        [Authorize(Role.Admin)]
         [HttpGet]
         public IActionResult GetAll()
         {
@@ -76,32 +73,6 @@ namespace WebApi.Controllers
             return Ok(user);
         }
 
-        // private string GenerateJwtToken(string username, List<string> roles)
-        // {
-        //     var claims = new List<Claim>
-        // {
-        //     new Claim(JwtRegisteredClaimNames.Sub, username),
-        //     new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-        //     new Claim(ClaimTypes.NameIdentifier, username)
-        // };
-
-        //     roles.ForEach(role =>
-        //     {
-        //         claims.Add(new Claim(ClaimTypes.Role, role));
-        //     });
-
-        //     var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Key"]));
-        //     var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-        //     var token = new JwtSecurityToken(
-        //         _configuration["JwtIssuer"],
-        //         _configuration["JwtIssuer"],
-        //         claims,
-        //         signingCredentials: creds
-        //     );
-
-        //     return new JwtSecurityTokenHandler().WriteToken(token);
-        // }
 
         [HttpGet]
         [Route("doctors")]
