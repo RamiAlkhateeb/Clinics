@@ -1,8 +1,11 @@
 using System.Text.Json.Serialization;
+using System.Collections.Generic;
+using Microsoft.AspNetCore.Identity;  
+
 
 namespace WebApi.Entities
 {
-    public class User
+    public class User   
     {
         public int Id { get; set; }
         public string Title { get; set; }
@@ -10,6 +13,8 @@ namespace WebApi.Entities
         public string LastName { get; set; }
         public string Email { get; set; }
         public Role Role { get; set; }
+
+        public List<Slot> Slots {get; set;}
 
         [JsonIgnore]
         public string PasswordHash { get; set; }

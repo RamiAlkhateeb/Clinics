@@ -15,10 +15,12 @@ namespace WebApi.Helpers
 
         protected override void OnConfiguring(DbContextOptionsBuilder options)
         {
-            // in memory database used for simplicity, change to a real db for production applications
-            options.UseInMemoryDatabase("TestDb");
+            // connect to sql server with connection string from app settings
+            options.UseSqlServer(Configuration.GetConnectionString("WebApiDatabase"));
         }
 
         public DbSet<User> Users { get; set; }
+        public DbSet<Slot> Slots { get; set; }
+
     }
 }
