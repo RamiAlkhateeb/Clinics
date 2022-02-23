@@ -8,7 +8,11 @@ using System;
 using WebApi.Models.Users;
 using Microsoft.EntityFrameworkCore;
 using WebApi.Models;
-
+using System.IdentityModel.Tokens.Jwt;
+using System.Text;
+using Microsoft.IdentityModel.Tokens;
+using System.Security.Claims;
+using Microsoft.Extensions.Options;
 
 namespace WebApi.Services
 {
@@ -19,7 +23,7 @@ namespace WebApi.Services
         IEnumerable<User> GetAllDoctors(FilteringParams filteringParams);
 
         User GetById(int id);
-        User Login(LoginRequest user);
+        AuthenticateResponse Login(LoginRequest user);
 
         void Create(CreateRequest model);
 
@@ -34,12 +38,18 @@ namespace WebApi.Services
 
         public SlotService slotService;
         public Functions functions;
+
+        private readonly AppSettings _appSettings;
+
         public UserService(
             DataContext context,
-            IMapper mapper)
+            IMapper mapper,
+            IOptions<AppSettings> appSettings)
         {
             _context = context;
             _mapper = mapper;
+            _appSettings = appSettings.Value;
+
             functions = new Functions();
         }
 
@@ -131,13 +141,29 @@ namespace WebApi.Services
 
 
 
-        public User Login(LoginRequest loginInfo)
+        public AuthenticateResponse Login(LoginRequest loginInfo)
         {
             var user = _context.Users.FirstOrDefault(user => user.Email.Equals(loginInfo.Email));
             if (user == null) throw new KeyNotFoundException("User not found");
             if (!BCryptNet.Verify(loginInfo.Password, user.PasswordHash))
                 throw new System.Exception("Wrong Password");
-            return user;
+            var token = generateJwtToken(user);
+            return new AuthenticateResponse(user, token);
+        }
+
+        private string generateJwtToken(User user)
+        {
+            // generate token that is valid for 7 days
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var key = Encoding.ASCII.GetBytes(_appSettings.Secret);
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(new[] { new Claim("id", user.Id.ToString()) }),
+                Expires = DateTime.UtcNow.AddDays(7),
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+            };
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+            return tokenHandler.WriteToken(token);
         }
     }
 }

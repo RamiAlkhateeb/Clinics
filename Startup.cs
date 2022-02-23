@@ -25,22 +25,27 @@ namespace WebApi
         public void ConfigureServices(IServiceCollection services)
         {
 
-            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
-{
-    options.TokenValidationParameters = new TokenValidationParameters
-    {
-        ValidateIssuer = true,
-        ValidateAudience = true,
-        ValidateLifetime = true,
-        ValidateIssuerSigningKey = true,
-        ValidIssuer = Configuration["Jwt:Issuer"],
-        ValidAudience = Configuration["Jwt:Issuer"],
-        IssuerSigningKey = new
-        SymmetricSecurityKey
-        (Encoding.UTF8.GetBytes
-        (Configuration["Jwt:Key"]))
-    };
-});
+//             services.AddAuthentication(auth =>
+//             {
+//                 auth.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+//                 auth.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+//             }).AddJwtBearer(options =>
+// {
+//     options.SaveToken = true;
+//     options.TokenValidationParameters = new TokenValidationParameters
+//     {
+//         ValidateIssuer = true,
+//         ValidateAudience = true,
+//         ValidateLifetime = true,
+//         ValidateIssuerSigningKey = true,
+//         ValidIssuer = Configuration["Jwt:Issuer"],
+//         ValidAudience = Configuration["Jwt:Issuer"],
+//         IssuerSigningKey = new
+//         SymmetricSecurityKey
+//         (Encoding.UTF8.GetBytes
+//         (Configuration["Jwt:Key"]))
+//     };
+// });
 
 
             services.AddDbContext<DataContext>();
@@ -54,6 +59,7 @@ namespace WebApi
                 x.JsonSerializerOptions.IgnoreNullValues = true;
             });
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+            services.Configure<AppSettings>(Configuration.GetSection("AppSettings"));
 
             // configure DI for application services
             services.AddScoped<IUserService, UserService>();
@@ -74,6 +80,8 @@ namespace WebApi
 
             // global error handler
             app.UseMiddleware<ErrorHandlerMiddleware>();
+            app.UseMiddleware<JwtMiddleware>();
+
 
             app.UseEndpoints(x => x.MapControllers());
 
@@ -91,6 +99,14 @@ namespace WebApi
 
             // app.UseAuthentication();
             // app.UseAuthorization();
+            // app.UseStatusCodePages();
+            // //app.UseDefaultFiles(); // so index.html is not required
+            // //app.UseStaticFiles();
+
+            // app.UseEndpoints(endpoints =>
+            // {
+            //     endpoints.MapControllers();
+            // });
 
         }
     }
