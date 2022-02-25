@@ -14,6 +14,8 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.Extensions.Configuration;
 using System.Linq;
+using System.IO;
+using Microsoft.AspNet.OData;
 
 namespace WebApi.Controllers
 {
@@ -35,13 +37,31 @@ namespace WebApi.Controllers
         }
 
         [Authorize(Role.Admin)]
+        [EnableQuery]
         [HttpGet]
         public IActionResult GetAll()
         {
             var users = _userService.GetAll();
-            return Ok(users);
+            return Ok( _userService.GetAll().AsQueryable());
         }
 
+        [HttpGet("csv")]
+        [Produces("text/csv")]
+        public IActionResult GetCSV()
+        {
+            var users = _userService.GetAll();
+
+            var builder = new StringBuilder();
+            builder.AppendLine("Id,UserName");
+            foreach (var user in users)
+            {
+                builder.AppendLine($"{user.Id},{user.FirstName}");
+            }
+            return File(Encoding.UTF8.GetBytes(builder.ToString()),"text/csv","users.csv");
+        }
+
+
+        
         [HttpGet("doctors/{id}")]
         public IActionResult GetById(int id)
         {
@@ -65,7 +85,7 @@ namespace WebApi.Controllers
         public IActionResult Login(LoginRequest model)
         {
             var user = _userService.Login(model);
-            
+
             if (user == null)
                 return BadRequest(new { message = "Username or password is incorrect" });
 
@@ -75,8 +95,9 @@ namespace WebApi.Controllers
 
 
         [HttpGet]
+        [EnableQuery]
         [Route("doctors")]
-        public IActionResult GetDoctors([FromQuery] FilteringParams filterParameters)
+        public ActionResult<IQueryable<object>> GetDoctors([FromQuery] FilteringParams filterParameters)
         {
             var users = _userService.GetAllDoctors(filterParameters);
             List<object> Result = new List<object>();

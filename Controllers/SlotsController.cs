@@ -26,7 +26,7 @@ namespace WebApi.Controllers
 
 
 
-        [HttpGet("{docId}")]
+        [HttpGet("doctors/{docId}/slots")]
         public IActionResult GetSlots(int docId)
         {
             var slots = _slotService.GetSlotsOfUser(docId);
@@ -55,7 +55,9 @@ namespace WebApi.Controllers
         }
 
 
-
+        /// <summary>
+        /// Book an appointment.
+        /// </summary>
         [HttpPost]
         [Route("book")]
         public IActionResult Book(Slot slot)

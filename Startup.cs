@@ -6,6 +6,12 @@ using WebApi.Helpers;
 using WebApi.Authorization;
 using WebApi.Services;
 using Microsoft.Extensions.Configuration;
+using Microsoft.AspNet.OData.Extensions;
+using System.Reflection;
+using System.IO;
+using System.Linq;
+using Microsoft.OpenApi.Models;
+using OData.Swagger.Services;
 
 namespace WebApi
 {
@@ -28,9 +34,28 @@ namespace WebApi
             {
                 // serialize enums as strings in api responses (e.g. Role)
                 x.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-                x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
+                //x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
                 // ignore omitted parameters on models to enable optional params (e.g. User update)
                 x.JsonSerializerOptions.IgnoreNullValues = true;
+            });
+            services.AddControllers().AddNewtonsoftJson();
+            services.AddOData();
+
+            services.AddSwaggerGen(s =>
+            {
+                s.SwaggerDoc("v1", new OpenApiInfo
+                {
+                    Version = "V1",
+                    Title = "Clincs API",
+                    Description = "API for Clincs"
+                });
+                //s.ResolveConflictingActions(apiDescriptions => apiDescriptions.First()); //This line
+
+                // Set the comments path for the Swagger JSON and UI.
+                var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+                s.IncludeXmlComments(xmlPath);
+
             });
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
             services.Configure<AppSettings>(Configuration.GetSection("AppSettings"));
@@ -39,12 +64,30 @@ namespace WebApi
             services.AddScoped<IJwtUtils, JwtUtils>();
             services.AddScoped<IUserService, UserService>();
             services.AddScoped<ISlotService, SlotService>();
+            //services.AddSwaggerGen();
+            services.AddOdataSwaggerSupport();
+
+
 
         }
 
         // configure the HTTP request pipeline
         public void Configure(IApplicationBuilder app)
         {
+            // Enable middleware to serve generated Swagger as a JSON endpoint.
+            //             app.UseSwagger(c =>
+            //    {
+            //        c.SerializeAsV2 = true;
+            //    });
+            app.UseDeveloperExceptionPage();
+
+            app.UseSwagger();
+            // Enable middleware to serve swagger-ui (HTML, JS, CSS, etc.)
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("./v1/swagger.json", "My API V1");
+                //c.RoutePrefix = string.Empty;
+            });
             app.UseRouting();
 
             // global cors policy
@@ -58,9 +101,14 @@ namespace WebApi
             app.UseMiddleware<JwtMiddleware>();
 
 
-            app.UseEndpoints(x => x.MapControllers());
+            app.UseEndpoints(x =>
+            {
+                x.EnableDependencyInjection();
+                x.Select().Count().Filter().OrderBy().MaxTop(100).SkipToken().Expand();
+                x.MapControllers();
+            });
 
-            
+
 
         }
     }
