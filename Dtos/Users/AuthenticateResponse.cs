@@ -1,6 +1,6 @@
 using WebApi.Entities;
 
-namespace WebApi.Models
+namespace WebApi.Dtos.Users
 {
     public class AuthenticateResponse
     {

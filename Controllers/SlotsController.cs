@@ -1,6 +1,6 @@
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
-using WebApi.Models.Users;
+using WebApi.Dtos.Users;
 using WebApi.Services;
 using WebApi.Entities;
 using System.Collections.Generic;

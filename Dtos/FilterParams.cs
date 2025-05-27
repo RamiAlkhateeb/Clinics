@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using WebApi.Entities;
 
-namespace WebApi.Models
+namespace WebApi.Dtos
 {
     public class FilteringParams
     {

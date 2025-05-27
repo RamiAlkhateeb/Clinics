@@ -1,6 +1,6 @@
 using AutoMapper;
 using WebApi.Entities;
-using WebApi.Models.Users;
+using WebApi.Dtos.Users;
 
 namespace WebApi.Helpers
 {
