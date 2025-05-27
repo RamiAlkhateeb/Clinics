@@ -6,7 +6,7 @@ using WebApi.Helpers;
 using WebApi.Authorization;
 using WebApi.Services;
 using Microsoft.Extensions.Configuration;
-using Microsoft.AspNet.OData.Extensions;
+//using Microsoft.AspNet.OData.Extensions;
 using System.Reflection;
 using System.IO;
 using System.Linq;
@@ -39,7 +39,7 @@ namespace WebApi
                 x.JsonSerializerOptions.IgnoreNullValues = true;
             });
             services.AddControllers().AddNewtonsoftJson();
-            services.AddOData();
+            //services.AddOData();
 
             services.AddSwaggerGen(s =>
             {
@@ -103,8 +103,8 @@ namespace WebApi
 
             app.UseEndpoints(x =>
             {
-                x.EnableDependencyInjection();
-                x.Select().Count().Filter().OrderBy().MaxTop(100).SkipToken().Expand();
+                //x.EnableDependencyInjection();
+                //x.Select().Count().Filter().OrderBy().MaxTop(100).SkipToken().Expand();
                 x.MapControllers();
             });
 

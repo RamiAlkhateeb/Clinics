@@ -15,7 +15,7 @@ using System.Text;
 using Microsoft.Extensions.Configuration;
 using System.Linq;
 using System.IO;
-using Microsoft.AspNet.OData;
+//using Microsoft.AspNet.OData;
 
 namespace WebApi.Controllers
 {
@@ -37,7 +37,7 @@ namespace WebApi.Controllers
         }
 
         [Authorize(Role.Admin)]
-        [EnableQuery]
+        //[EnableQuery]
         [HttpGet]
         public IActionResult GetAll()
         {
@@ -95,7 +95,7 @@ namespace WebApi.Controllers
 
 
         [HttpGet]
-        [EnableQuery]
+        //[EnableQuery]
         [Route("doctors")]
         public ActionResult<IQueryable<object>> GetDoctors([FromQuery] FilteringParams filterParameters)
         {
