@@ -71,8 +71,13 @@ ClinicAPI/
 ├── Controllers/
 │   ├── SlotsController.cs
 │   └── UsersController.cs
-├── Models/
-├── Services/
+├── Authorization/
+├── Dtos/
+|   ├── Users
+|   └── FilterParams
+├── Entities
+├── Services
+├── Helpers
 ├── Program.cs
 ├── Startup.cs
 ├── appsettings.json
