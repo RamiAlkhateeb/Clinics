@@ -16,7 +16,7 @@ namespace WebApi
                 .ConfigureWebHostDefaults(x => 
                 {
                     x.UseStartup<Startup>();
-                    x.UseUrls("http://localhost:4000");
+                    x.UseUrls("http://+:80");
                 });
         }
     }

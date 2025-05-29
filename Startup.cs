@@ -85,8 +85,10 @@ namespace WebApi
             // Enable middleware to serve swagger-ui (HTML, JS, CSS, etc.)
             app.UseSwaggerUI(c =>
             {
-                c.SwaggerEndpoint("./v1/swagger.json", "My API V1");
-                //c.RoutePrefix = string.Empty;
+                c.SwaggerEndpoint($"/swagger/v1/swagger.json", "My API V1");
+                //c.SwaggerEndpoint("http://localhost:4000/swagger/v1/swagger.json", "My API V2");
+
+                //c.RoutePrefix = "swagger"; // Optional: Swagger UI at /swagger
             });
             app.UseRouting();
 
