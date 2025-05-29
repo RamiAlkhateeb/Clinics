@@ -137,14 +137,3 @@ This project is licensed under the MIT License.
 
 Enjoy managing your clinic with this lightweight API! 😊
 
-```
-
----
-
-Would you like me to:
-✅ Write a **sample appsettings.json**?  
-✅ Provide **Swagger setup** for testing the API?  
-✅ Or create **sample data models**?  
-
-Let me know! 😊
-```
