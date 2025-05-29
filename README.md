@@ -58,7 +58,7 @@ This is a **.NET 9 Web API** for managing a clinic's appointments and users, bui
   ```bash
   docker build -t clinic-api .
   docker run -p 5000:5000 clinic-api
-````
+
 
 * Update your connection strings if using SQLite with Docker volume.
 
